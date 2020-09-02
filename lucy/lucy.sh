@@ -68,6 +68,9 @@ fi
 if [ "$VPC_ID" == '' ]; then
   VPC_ID=$(aws ec2 describe-security-groups --group-ids $SECURITY_GROUP --query 'SecurityGroups[*].[VpcId]' --output text)
 fi
+if [ "$JMETER_IMAGE" == '' ]; then
+  JMETER_IMAGE=smithmicro/jmeter
+fi
 
 # Step 1 - Create our ECS Cluster with MINION_COUNT+1 instances
 ecs-cli --version
@@ -98,7 +101,7 @@ while true; do
 done
 
 # Step 3 - Run the Minion task with the requested JMeter version, flags, instance count and memory
-sed -i 's/jmeter:latest/jmeter:'"$JMETER_VERSION"'/' /opt/jmeter/lucy.yml
+sed -i 's~smithmicro/jmeter:latest~'"$JMETER_IMAGE"':'"$JMETER_VERSION"'~' /opt/jmeter/lucy.yml #use sqiggle because imagenames have slashes
 sed -i 's/JMETER_FLAGS=/JMETER_FLAGS='"$JMETER_FLAGS"'/' /opt/jmeter/lucy.yml
 sed -i 's/950m/'"$MEM_LIMIT"'/' /opt/jmeter/lucy.yml
 sed -i 's/CUSTOM_PLUGIN_URL=/CUSTOM_PLUGIN_URL='"$CUSTOM_PLUGIN_URL"'/' /opt/jmeter/lucy.yml
@@ -159,7 +162,7 @@ else
   echo "Running Docker to start JMeter in Gru mode"
   JMX_IN_COMTAINER=/plans/$(basename $INPUT_JMX)
   ssh -i $PEM_PATH/$KEY_NAME.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ec2-user@${GRU_HOST} \
-  "docker run --network host -v /tmp:/plans -v /logs:/logs --env MINION_HOSTS=$MINION_HOSTS --env JMETER_FLAGS=$JMETER_FLAGS smithmicro/jmeter:$JMETER_VERSION $JMX_IN_COMTAINER"
+  "docker run --network host -v /tmp:/plans -v /logs:/logs --env MINION_HOSTS=$MINION_HOSTS --env JMETER_FLAGS=$JMETER_FLAGS $JMETER_IMAGE:$JMETER_VERSION $JMX_IN_COMTAINER"
 
   # Step 8 - Fetch the results from Gru
   echo "Copying results from Gru"
