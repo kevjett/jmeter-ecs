@@ -162,7 +162,7 @@ else
   echo "Running Docker to start JMeter in Gru mode"
   JMX_IN_COMTAINER=/plans/$(basename $INPUT_JMX)
   ssh -i $PEM_PATH/$KEY_NAME.pem -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ec2-user@${GRU_HOST} \
-  "docker run --network host -v /tmp:/plans -v /logs:/logs --env MINION_HOSTS=$MINION_HOSTS --env JMETER_FLAGS=$JMETER_FLAGS $JMETER_IMAGE:$JMETER_VERSION $JMX_IN_COMTAINER"
+  "docker run --network host -v /tmp:/plans -v /logs:/logs --env MINION_HOSTS=$MINION_HOSTS --env JMETER_FLAGS='$JMETER_FLAGS' $JMETER_IMAGE:$JMETER_VERSION $JMX_IN_COMTAINER"
 
   # Step 8 - Fetch the results from Gru
   echo "Copying results from Gru"
