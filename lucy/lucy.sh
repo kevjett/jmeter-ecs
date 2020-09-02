@@ -132,8 +132,11 @@ else
 fi
 echo "Gru at $GRU_HOST"
 
+ERROR_CODE=0
+
 if [ "$MINION_INSTANCE_IDS" == '' ]; then
   echo "Error - no Minion instance IDs found."
+  ERROR_CODE=10
 else
   MINION_HOSTS=$(aws ec2 describe-instances --instance-ids $MINION_INSTANCE_IDS \
       --query 'Reservations[*].Instances[*].[PrivateIpAddress]' --output text | tr '\n' ',')
@@ -177,3 +180,4 @@ else
   echo "cluster/$CLUSTER_NAME is retained upon request."
 fi
 echo "Complete"
+exit $ERROR_CODE
